@@ -1,0 +1,11 @@
+# Заголовки для Cloudflare Pages (локальный server/serve.mjs ставит такие же).
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/data/*
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

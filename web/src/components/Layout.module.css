@@ -1,0 +1,133 @@
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ---------- Шапка ---------- */
+.header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.headerInner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  min-height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  flex: none;
+}
+.mark { transition: transform var(--dur) var(--ease); }
+.logo:hover .mark { transform: rotate(-6deg); }
+.logoText {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+.logoGg { color: var(--accent); }
+
+.nav { display: flex; gap: 4px; }
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.navLink:hover { color: var(--text); background: var(--surface); }
+.navActive { color: var(--text); }
+.navActive::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.tools { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+
+/* ---------- Содержимое ---------- */
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--gutter) var(--space-7);
+  outline: none;
+}
+
+/* ---------- Подвал ---------- */
+.footer { border-top: 1px solid var(--line); }
+.footerInner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  font-family: var(--font-ui);
+}
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+  flex-wrap: wrap;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.brand {
+  color: #bda47a;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.legal {
+  margin-top: 6px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+
+/* ---------- Адаптивность ---------- */
+@media (max-width: 880px) {
+  .headerInner {
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+    padding-top: 10px;
+    padding-bottom: 0;
+  }
+  .tools { margin-left: auto; }
+  .nav {
+    order: 3;
+    width: calc(100% + 2 * var(--gutter));
+    margin: 8px calc(-1 * var(--gutter)) 0;
+    padding: 0 calc(var(--gutter) - 8px);
+    border-top: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .navLink { min-height: 44px; }
+  .navActive::after { bottom: 0; }
+}
+@media (max-width: 560px) {
+  /* Переключатели и статус — отдельной строкой во всю ширину, по краю логотипа. */
+  .tools { width: 100%; margin: 8px 0 0; gap: var(--space-2); }
+  .tools > :last-child { margin-left: auto; }
+  .logoText { font-size: 15px; }
+  .main { padding-top: var(--space-5); }
+  .footerRow { justify-content: center; text-align: center; flex-direction: column; align-items: center; }
+  .legal { text-align: center; }
+}

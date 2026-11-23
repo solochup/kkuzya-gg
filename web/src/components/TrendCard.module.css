@@ -1,0 +1,3 @@
+/* Карточка растягивается по соседней (Player DNA) — график занимает свободную высоту, без пустоты снизу. */
+section.card { display: flex; flex-direction: column; }
+.fill { flex: 1; display: grid; grid-template-rows: minmax(300px, 1fr); }

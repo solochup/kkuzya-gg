@@ -1,0 +1,29 @@
+# ШАБЛОН. Не активен. Чтобы включить: скопировать в .github/workflows/kkuzya-ci.yml.
+# Проверки при каждом push и pull request: тесты ядра и сайта, тесты фронтенда, типы и сборка.
+# Ничего не публикует, секреты не нужны.
+name: kkuzya-ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm test
+      - run: npm --prefix web ci --no-audit --no-fund
+      - run: npm --prefix web test
+      - run: npm --prefix web run build

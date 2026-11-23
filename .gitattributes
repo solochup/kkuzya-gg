@@ -1,0 +1,12 @@
+# Текстовые файлы хранятся в репозитории с LF.
+* text=auto eol=lf
+
+# Командные файлы Windows работают только с CRLF (иначе cmd.exe ломает метки и строки).
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Двоичные файлы.
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.ico binary

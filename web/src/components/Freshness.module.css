@@ -1,0 +1,58 @@
+.wrap { position: relative; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.btn:hover, .btn[aria-expanded='true'] { border-color: var(--line-strong); color: var(--text); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex: none; }
+.fresh { background: var(--win); }
+.aging { background: var(--warn); }
+.stale { background: var(--warn); }
+.offline { background: var(--loss); }
+.missing { background: var(--loss); }
+.loading { background: var(--text-3); }
+
+.pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+  width: min(340px, calc(100vw - 32px));
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--fs-sm);
+  animation: pop var(--dur-fast) var(--ease);
+}
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.list { margin: 0; display: grid; gap: 8px; }
+.list div { display: grid; gap: 1px; }
+.list dt { color: var(--text-3); font-size: var(--fs-xs); }
+.list dd { margin: 0; color: var(--text); font-variant-numeric: tabular-nums; }
+.note { margin-top: 10px; color: var(--text-2); }
+.errors { margin: 10px 0 0; padding-left: 18px; color: var(--loss); }
+.foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--text-3); font-size: var(--fs-xs); }
+.note code { font-size: 0.95em; color: var(--accent-strong); }
+
+.short { display: none; }
+/* На узком экране — короткая подпись целиком вместо обрезанной длинной; полная — во всплывающем окне и aria-label. */
+@media (max-width: 720px) {
+  .text { display: none; }
+  .short { display: inline; }
+  .btn { min-height: 36px; }
+}
+@media (pointer: coarse) { .btn { min-height: 40px; } }

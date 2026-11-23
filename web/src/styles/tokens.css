@@ -1,0 +1,88 @@
+/* Warm Noir Minimal — дизайн-токены KKUZYA.GG.
+   Базовая палитра задана заказчиком; производные оттенки подобраны под контраст на #20201D. */
+:root {
+  color-scheme: dark;
+
+  /* Поверхности */
+  --bg: #141412;
+  --surface: #20201d;
+  --surface-2: #272723;          /* hover / вложенные блоки */
+  --surface-3: #2f2f2a;          /* активные элементы */
+  --line: rgba(240, 237, 229, 0.08);
+  --line-strong: rgba(240, 237, 229, 0.14);
+
+  /* Текст */
+  --text: #f0ede5;
+  --text-2: #a8a69d;
+  --text-3: #8f8d85;             /* подписи осей, третичный текст (≈4.9:1 на --surface) */
+
+  /* Акцент: только для выбранного и ключевых визуализаций */
+  --accent: #bda47a;
+  --accent-strong: #d4bd93;
+  --accent-soft: rgba(189, 164, 122, 0.14);
+  --accent-line: rgba(189, 164, 122, 0.45);
+
+  /* Смысловые цвета (приглушённые, тёплые) */
+  --win: #8fae8b;
+  --win-soft: rgba(143, 174, 139, 0.14);
+  --loss: #c98a7e;
+  --loss-soft: rgba(201, 138, 126, 0.14);
+  --warn: #d2b26a;
+  --warn-soft: rgba(210, 178, 106, 0.12);
+  --info: #8ea3b8;
+
+  /* Серии графиков (бронза первая; остальные — спокойные, различимые) */
+  --series-1: #bda47a;
+  --series-2: #8ea3b8;
+  --series-3: #8fae8b;
+  --series-4: #c98a7e;
+  --series-5: #a993b8;
+
+  /* Слоты предметов */
+  --slot-weapon: #d39b5f;
+  --slot-spirit: #a98bc9;
+  --slot-vitality: #8fb07a;
+
+  /* Типографика */
+  --font-ui: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Manrope Variable', Manrope, 'Inter Variable', system-ui, sans-serif;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-base: 15px;
+  --fs-lg: 17px;
+  --fs-xl: 22px;
+  --fs-2xl: 30px;
+  --fs-3xl: 40px;
+
+  /* Отступы и формы */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --page-max: 1240px;
+  --gutter: clamp(16px, 4vw, 32px);
+  --header-h: 64px;
+
+  /* Движение */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 200ms;
+  --dur: 260ms;
+  --dur-slow: 350ms;
+
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+}

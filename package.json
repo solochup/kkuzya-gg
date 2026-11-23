@@ -1,0 +1,22 @@
+{
+  "name": "deadlock-check",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "KKUZYA.GG: проверочный инструмент Deadlock API (0.2.0) и сайт аналитики (0.3.0). Ядро и сервер без зависимостей.",
+  "engines": { "node": ">=20.19" },
+  "scripts": {
+    "check": "node check.mjs",
+    "test": "node tests/run-tests.mjs && node tests/site-tests.mjs",
+    "test:web": "npm --prefix web test",
+    "sync": "node server/sync-cli.mjs",
+    "start": "node server/serve.mjs",
+    "start:offline": "node server/serve.mjs --no-sync",
+    "build": "npm --prefix web run build",
+    "dev": "npm --prefix web run dev",
+    "smoke": "npm --prefix web run smoke",
+    "bench": "node tools/bench-digest.mjs",
+    "pages:prepare": "node tools/prepare-pages.mjs",
+    "pages:gate": "node tools/publish-gate.mjs decide"
+  }
+}

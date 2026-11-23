@@ -1,0 +1,29 @@
+# Зависимости и сборка
+node_modules/
+web/node_modules/
+web/dist/
+dist-pages/
+.wrangler/
+coverage/
+
+# Данные синхронизации (кеш API, сгенерированные JSON, журнал публикаций); создаются заново командой npm run sync.
+# В GitHub Actions живут в кеше actions/cache, в репозиторий не коммитятся.
+data/
+
+# Отчёты проверочного инструмента (npm run check) — локальные; папка сохраняется через .keep
+out/*
+!out/.keep
+
+# Локальные и секретные файлы
+*.tmp
+*.log
+.env
+.env.*
+.dev.vars
+*.pem
+*.key
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/

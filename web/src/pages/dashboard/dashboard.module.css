@@ -1,0 +1,227 @@
+.page { display: grid; gap: var(--space-5); }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-5); }
+.grid12 { display: grid; grid-template-columns: minmax(280px, 0.9fr) minmax(0, 2.1fr); gap: var(--space-5); align-items: start; }
+@media (max-width: 1080px) {
+  .grid2, .grid12 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Профиль ---------- */
+.profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-2);
+}
+.avatar {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface-2);
+  box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 4px var(--bg), 0 0 0 5px var(--accent-line);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profileMain { min-width: 0; flex: 1 1 220px; }
+.eyebrow {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.name {
+  margin-top: 2px;
+  font-size: var(--fs-3xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.profileMeta {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.extLink { color: var(--text-2); border-bottom: 1px solid var(--line-strong); transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.extLink:hover { color: var(--accent); border-color: var(--accent-line); }
+.scope { text-align: right; margin-left: auto; }
+.scopeMain { font-size: var(--fs-md); color: var(--text-2); }
+.scopeMain strong { color: var(--text); font-weight: 600; }
+.scopeSub { color: var(--text-3); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.scopeBadges { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; flex-wrap: wrap; }
+/* Арт героя последнего матча: компактный портрет справа, растворяется в фоне. */
+.heroArt {
+  position: relative;
+  flex: none;
+  width: 120px;
+  height: 132px;
+  margin: 0 0 0 var(--space-2);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.heroArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 15%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  transition: transform var(--dur-slow) var(--ease);
+}
+.heroArt:hover img { transform: scale(1.04); }
+.heroArt figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 0 8px 7px;
+  display: grid;
+  line-height: 1.2;
+  text-align: center;
+}
+.heroArt figcaption span { color: var(--text-2); font-size: 10px; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; }
+.heroArt figcaption b { color: var(--text); font-size: var(--fs-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (prefers-reduced-motion: reduce) { .heroArt:hover img { transform: none; } }
+
+@media (max-width: 640px) {
+  .heroArt { display: none; }   /* на узком экране профиль и так в две строки: арт не помещается без баннера */
+  .name { font-size: var(--fs-2xl); }
+  .scope { text-align: left; margin-left: 0; width: 100%; }
+  .scopeBadges { justify-content: flex-start; }
+}
+
+/* ---------- KPI ---------- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.kpi {
+  background: var(--surface);
+  padding: 18px 20px 16px;
+  min-width: 0;
+  transition: background var(--dur-fast) var(--ease);
+}
+.kpi:hover { background: var(--surface-2); }
+.kpiAccent { background: linear-gradient(160deg, rgba(189, 164, 122, 0.10), transparent 55%), var(--surface); }
+.kpiLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.kpiValue {
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.kpiAccent .kpiValue { color: var(--accent-strong); }
+.kpiSub { margin-top: 6px; color: var(--text-3); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .kpiValue { font-size: 24px; } .kpi { padding: 14px 14px 12px; } }
+
+/* ---------- DNA ---------- */
+.dnaCard { display: flex; flex-direction: column; container-type: inline-size; }
+.dnaBody { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: center; flex: 1; }
+.dnaChart { min-height: 260px; }
+/* Радар и разбор осей рядом — только когда карточка достаточно широкая. */
+@container (min-width: 760px) { .dnaBody { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.dnaSide { display: grid; gap: var(--space-3); }
+.axisList { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.axisBtn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.axisBtn:hover { background: var(--surface-2); }
+.axisOn, .axisOn:hover { background: var(--surface-2); box-shadow: inset 2px 0 0 var(--accent); }
+.axisName { font-size: var(--fs-md); font-weight: 500; color: var(--text); }
+.axisName small { margin-left: 8px; font-size: var(--fs-xs); color: var(--text-3); font-weight: 400; }
+.axisScore { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }
+.axisOn .axisScore { color: var(--accent-strong); }
+.axisTrack { grid-column: 1 / -1; position: relative; height: 4px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.axisTrack span { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px; opacity: 0.85; transition: width var(--dur-slow) var(--ease); }
+.axisTrack i { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--text-3); }
+.parts { padding: 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.partsHead { display: flex; align-items: center; gap: 4px; color: var(--text-3); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.parts ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.parts li { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-sm); }
+.parts li span:last-child { color: var(--text); font-weight: 600; }
+.partOff span:last-child { color: var(--text-3) !important; font-weight: 400 !important; }
+
+/* ---------- Герои ---------- */
+.heroes { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.heroRow { display: flex; gap: 12px; align-items: center; padding: 6px 0; }
+.heroRow + .heroRow { border-top: 1px solid var(--line); padding-top: 14px; }
+.heroMain { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.heroTop { display: flex; justify-content: space-between; gap: 8px; }
+.heroName { font-weight: 600; }
+.heroGames { color: var(--text-2); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.heroStats { display: flex; gap: 14px; color: var(--text-3); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.heroStats b { color: var(--text); font-weight: 600; }
+.heroStats b.good { color: var(--win); }
+.heroStats b.bad { color: var(--loss); }
+.heroKda { margin-left: auto; }
+
+/* ---------- Таблица матчей ---------- */
+.tableWrap { overflow-x: auto; margin: 0 calc(-1 * clamp(16px, 2.2vw, 24px)); padding: 0 clamp(16px, 2.2vw, 24px); container-type: inline-size; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-md); }
+.table th {
+  padding: 0 10px 10px;
+  text-align: left;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.table td { padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
+.table tr:last-child td { border-bottom: 0; }
+.table th:first-child, .table td:first-child { padding-left: 0; }
+.table th:last-child, .table td:last-child { padding-right: 0; }
+.r { text-align: right !important; }
+.clickRow { cursor: pointer; transition: background var(--dur-fast) var(--ease); }
+.clickRow:hover { background: var(--surface-2); }
+.clickRow:hover td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+.heroCell { display: flex; align-items: center; gap: 10px; padding-left: 6px; }
+.rowLink { font-weight: 600; }
+.rowLink:hover { color: var(--accent); }
+.cellSub { color: var(--text-3); font-size: var(--fs-xs); }
+.kda i { color: var(--text-3); font-style: normal; }
+.muted { color: var(--text-3); }
+.tableNote { margin-top: 12px; color: var(--text-3); font-size: var(--fs-sm); }
+/* Колонки прячутся по ширине самой карточки, а не окна. */
+@container (max-width: 860px) { .hideMd { display: none; } }
+@container (max-width: 600px) { .hideSm { display: none; } .table { font-size: var(--fs-sm); } .table td { padding: 10px 6px; } }
+@container (max-width: 400px) { .cellSub { display: none; } .heroCell { gap: 8px; padding-left: 0; } }

@@ -1,0 +1,113 @@
+# Автоматическое обновление статистики KKUZYA.GG (источник: deploy/github-workflow.yml.example).
+#
+# ПРЕДОХРАНИТЕЛЬ: по расписанию задание выполняется, только если в репозитории задана переменная
+# KK_SYNC_ENABLED = true (Settings → Secrets and variables → Actions → Variables). Пока её нет, запуски
+# по расписанию пропускаются без обращения к API и без расхода минут. Ручной запуск (Run workflow) работает всегда.
+# Публикация на Cloudflare — только при наличии секретов CLOUDFLARE_API_TOKEN и CLOUDFLARE_ACCOUNT_ID.
+#
+# Примерно каждые 15 минут: синхронизация с Deadlock API -> сборка -> пакет dist-pages -> решение о публикации.
+# Публикация на Cloudflare Pages выполняется ТОЛЬКО если изменилось видимое посетителю содержимое
+# (новые матчи, новая версия сайта, переход «API недоступен» <-> «данные актуальны»),
+# плюс одна контрольная публикация в сутки. Лимит: 20 в сутки и 300 в месяц (UTC), см. tools/publish-gate.mjs.
+#
+# Бесплатно: GitHub Actions в публичном репозитории; Cloudflare Pages Free (500 сборок/мес — сборки на стороне
+# Cloudflare не используются, готовые файлы загружаются через wrangler; лимит 300 оставляет запас,
+# даже если Direct Upload засчитывается в этот лимит — документация этого не уточняет).
+name: kkuzya-sync
+
+on:
+  schedule:
+    # Не в начале часа: GitHub предупреждает о задержках и пропусках запусков в :00.
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Опубликовать даже без изменений (лимиты всё равно действуют)'
+        type: boolean
+        default: false
+
+# Минимальные права: только чтение кода. Workflow ничего не коммитит и не меняет настройки репозитория.
+permissions:
+  contents: read
+
+concurrency:
+  group: kkuzya-sync
+  cancel-in-progress: false
+
+env:
+  KK_SITE_URL: ${{ vars.KK_SITE_URL || 'https://kkuzya-gg.pages.dev' }}
+  KK_PAGES_PROJECT: ${{ vars.KK_PAGES_PROJECT || 'kkuzya-gg' }}
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  sync:
+    if: github.event_name == 'workflow_dispatch' || vars.KK_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # Кеш data/: сводки матчей, ETag, журнал публикаций. Восстанавливается последний сохранённый.
+      # Если кеш потерян (не использовался 7 дней или вытеснен), sync заново скачает последние матчи,
+      # а журнал публикаций восстановится с опубликованного сайта (data/publish.json).
+      - name: Restore data cache
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: data
+          key: kkuzya-data-${{ github.run_id }}
+          restore-keys: kkuzya-data-
+
+      - name: Sync with Deadlock API
+        id: sync
+        continue-on-error: true   # при сбое API status.json честно помечается, сайт показывает прежние данные
+        run: node server/sync-cli.mjs
+
+      - name: Build site
+        run: |
+          npm --prefix web ci --no-audit --no-fund
+          npm --prefix web run build
+
+      - name: Prepare Pages package
+        id: prepare
+        continue-on-error: true   # нет ни кеша, ни ответа API — публиковать нечего, сайт остаётся прежним
+        run: node tools/prepare-pages.mjs
+
+      - name: Decide whether to publish
+        id: gate
+        if: steps.prepare.outcome == 'success'
+        run: node tools/publish-gate.mjs decide
+        env:
+          KK_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
+          KK_HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        if: steps.gate.outputs.deploy == 'true'
+        run: npx --yes wrangler@4.158.0 pages deploy dist-pages --project-name "$KK_PAGES_PROJECT" --branch main --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Record successful publish
+        if: steps.deploy.outcome == 'success'
+        run: node tools/publish-gate.mjs commit
+
+      - name: Nothing to publish
+        if: steps.prepare.outcome == 'failure'
+        run: echo "::warning::Пакет не собран (нет данных и API недоступен). Опубликованный сайт не изменён."
+
+      # Сохраняем кеш всегда, даже если публикация упала: новые сводки и счётчик попыток не теряются.
+      - name: Save data cache
+        if: always()
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: data
+          key: kkuzya-data-${{ github.run_id }}
