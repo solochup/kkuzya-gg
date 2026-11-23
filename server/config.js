@@ -12,7 +12,7 @@ export const config = {
   nickname: process.env.KK_NICKNAME || 'kkuzya',
   api: (process.env.KK_API || 'https://api.deadlock-api.com').replace(/\/+$/, ''),
   dataDir: path.resolve(process.env.KK_DATA_DIR || path.join(ROOT, 'data')),
-  webDist: path.join(ROOT, 'web', 'dist'),
+  webDist: path.resolve(process.env.KK_WEB_DIST || path.join(ROOT, 'web', 'dist')),
   port: Number(process.env.PORT || 4173),
   host: process.env.HOST || '127.0.0.1',
   syncIntervalMin: Math.max(2, Number(process.env.KK_SYNC_MIN || 5)),

@@ -40,8 +40,11 @@ function sendFile(req, res, file, { cache }) {
 
 const server = http.createServer((req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
-  const url = new URL(req.url, 'http://local');
-  const p = decodeURIComponent(url.pathname);
+  // new URL уже убрал точечные сегменты (/data/../x -> /x); дальше раскодируем %-последовательности
+  // и проверяем путь ещё раз в safeJoin. Битое кодирование и нулевой байт — 400, а не падение сервера.
+  let p;
+  try { p = decodeURIComponent(new URL(req.url, 'http://local').pathname); } catch { p = null; }
+  if (p === null || p.includes('\0')) { res.writeHead(400); res.end(); return; }
   if (p.startsWith('/data/')) {
     const f = safeJoin(store.publicDir, p.slice('/data/'.length));
     if (!f) { res.writeHead(400); res.end(); return; }

@@ -2,6 +2,8 @@
 // Запуск: node tests/site-tests.mjs        На реальном матче: FIXTURE=путь\metadata.json node tests/site-tests.mjs
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import http from 'node:http';
+import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -331,26 +333,54 @@ test('синхронизация: ответ 429 с Retry-After повторяе
 });
 
 /* ---------- Сервер ---------- */
+// Герметичный сервер: свои папки сайта и данных (не зависит от того, собран ли web/dist и есть ли data/).
+// Запросы отправляются «как есть» через http.request: fetch сам нормализует /data/../x в /x
+// и до защиты /data/ такие пути просто не доходят.
 test('сервер: отдаёт данные, не выпускает за пределы папки, SPA-маршруты ведут на сайт', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'kk-serve-'));
+  const SECRET = 'KK_SECRET_MARKER';
+  const dataDir = path.join(tmp, 'data'), webDist = path.join(tmp, 'web');
+  for (const d of [path.join(dataDir, 'public'), path.join(dataDir, 'cache'), webDist]) fs.mkdirSync(d, { recursive: true });
+  fs.writeFileSync(path.join(dataDir, 'public', 'status.json'), '{"ok":true}');
+  fs.writeFileSync(path.join(dataDir, 'cache', 'state.json'), `{"historyEtag":"${SECRET}"}`);
+  fs.writeFileSync(path.join(tmp, 'package.json'), `{"name":"${SECRET}"}`);
+  fs.writeFileSync(path.join(webDist, 'index.html'), '<!doctype html><title>KKUZYA.GG</title>');
   const port = 4300 + Math.floor(Math.random() * 500);
-  const child = spawn(process.execPath, [path.join(HERE, '..', 'server', 'serve.mjs'), '--no-sync'], { env: { ...process.env, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, [path.join(HERE, '..', 'server', 'serve.mjs'), '--no-sync'], { env: { ...process.env, PORT: String(port), KK_DATA_DIR: dataDir, KK_WEB_DIST: webDist }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const raw = (p, method = 'GET') => new Promise((res, rej) => {
+    const q = http.request({ host: '127.0.0.1', port, path: p, method, agent: false }, (r) => {
+      let body = ''; r.setEncoding('utf8'); r.on('data', (c) => (body += c)); r.on('end', () => res({ status: r.statusCode, body }));
+    });
+    q.setTimeout(3000, () => q.destroy(new Error(`${p}: нет ответа`)));
+    q.on('error', rej); q.end();
+  });
   try {
     await new Promise((res, rej) => {
       const t = setTimeout(() => rej(new Error('сервер не запустился')), 8000);
       child.stdout.on('data', (b) => { if (String(b).includes('KKUZYA.GG:')) { clearTimeout(t); res(); } });
     });
-    const base = `http://127.0.0.1:${port}`;
-    for (const bad of ['/data/..%2Fcache%2Fstate.json', '/data/../cache/state.json', '/data/%2e%2e/%2e%2e/package.json']) {
-      const r = await fetch(base + bad);
-      assert.ok([400, 404].includes(r.status), `${bad} -> ${r.status}`);
-      const body = await r.text();
-      assert.ok(!body.includes('historyEtag') && !body.includes('"name"'), `${bad}: утечка файла`);
+    // [путь как в запросе, ожидаемый код]
+    const cases = [
+      ['/data/../cache/state.json', 404],          // URL-парсер сервера убирает «..» -> /cache/state.json, вне сайта такого файла нет
+      ['/data/%2e%2e/%2e%2e/package.json', 404],   // %2e%2e — тоже точечный сегмент по стандарту URL -> /package.json
+      ['/data/..%2Fcache%2Fstate.json', 404],      // %2F раскодирован после разбора URL; safeJoin прижимает путь к data/public
+      // Обратная косая: в Windows это разделитель (выход за папку -> 400), в Linux — обычный символ имени (нет файла -> 404).
+      ['/data/..%5Ccache%5Cstate.json', path.sep === '\\' ? 400 : 404],
+      ['/data/%E0%A4%A', 400],                     // битое %-кодирование
+      ['/data/a%00b.json', 400],                   // нулевой байт
+    ];
+    for (const [p, want] of cases) {
+      const r = await raw(p);
+      assert.equal(r.status, want, `${p} -> ${r.status}`);
+      assert.ok(!r.body.includes(SECRET), `${p}: утечка файла`);
     }
-    const post = await fetch(`${base}/data/status.json`, { method: 'POST' });
-    assert.equal(post.status, 405);
-    const spa = await fetch(`${base}/lab`);
-    assert.ok([200, 503].includes(spa.status));   // 503 — если сайт ещё не собран
-  } finally { child.kill(); }
+    const ok = await raw('/data/status.json');
+    assert.equal(ok.status, 200, 'после атак сервер жив и отдаёт данные'); assert.equal(ok.body, '{"ok":true}');
+    assert.equal((await raw('/data/status.json', 'POST')).status, 405);
+    const spa = await raw('/lab');
+    assert.equal(spa.status, 200); assert.ok(spa.body.includes('KKUZYA.GG'));
+    assert.equal((await raw('/assets/none.js')).status, 404, 'несуществующий файл с расширением — 404, а не index.html');
+  } finally { child.kill(); fs.rmSync(tmp, { recursive: true, force: true }); }
 });
 
 /* ---------- Публикация на Cloudflare Pages: только при видимых изменениях ---------- */
@@ -358,7 +388,6 @@ const { fingerprint, visibleStatus, decide, commit, policyFromEnv, ledgerFromPub
 const { preparePages } = await import('../tools/prepare-pages.mjs');
 const { runGate } = await import('../tools/publish-gate.mjs');
 const { FileStore } = await import('../server/store.js');
-const os = await import('node:os');
 
 const HOUR = 3_600_000;
 const T0 = Date.UTC(2026, 10, 23, 12, 0, 0);
